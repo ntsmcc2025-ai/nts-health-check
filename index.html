@@ -628,32 +628,42 @@
         }
 
         // 發送數據到 Google Sheets (使用 Google Apps Script)
-        async function submitToGoogleSheets(formData) {
-            // 你提供的部署 URL
-            const googleAppsScriptUrl = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLhf4b_wGy7Ufp0Q1RdnqxeiiDY2zyDEINkbStj82fEF0m7NU_t0eunWjY18VAtErnu6L3BOQyyJPbZgknHAJ94Nc4zMn0svOP8pF88V1r6W_uknBfkNerlR6bZEc13Zs1aY-C17N1RrvBYeaRDbvCVNBGcNJbtg7PuY-dpaCPv7rWmmKBcSNoXTZKkX808M82DPfJOm8I_QqV4GwZKrEPrOYQ1AD3rYPlfvBayXkKXj4sXPydzpgjanv0LEeTn5D58R3lmsYzsAcUde_qsGTv90kC857X2p-2RoEKCq&lib=M3ZwAmpLt3NK-GNkLqv_a55UlRxPXVNs1';
+               async function submitToGoogleSheets(formData) {
+            // 你的最新 URL
+            const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzVoQ85DPmnvm3ubQ3SwQJKJ-2oMya60A2ddEb-PdIzNg0aV4l8xSduxIXXH9YqwsBX-g/exec';
             
             const payload = {
                 name: formData.name,
                 posting: formData.posting,
                 phone: formData.phone,
                 timeslot: formData.timeslot,
-                timestamp: formData.timestamp
+                timestamp: new Date().toLocaleString()
             };
 
+            // ⚠️ 關鍵修改：
+            // 1. 使用 URLSearchParams 封裝數據 (模擬傳統表單提交)
+            // 2. 不要手動設定 Content-Type 為 application/json
+            // 3. 不要設定 mode: 'no-cors' (因為用表單格式通常可以直接過)
+            //    或者保留 no-cors 但要配合 text/plain
+            
+            // 方案 A：使用 text/plain (最推薦，最穩)
             try {
-                const response = await fetch(googleAppsScriptUrl, {
+                await fetch(googleAppsScriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'no-cors', // 忽略 CORS 回應
                     headers: {
-                        'Content-Type': 'application/json', // 重要：確保 Apps Script 能解析
+                        'Content-Type': 'text/plain' // 這是重點！絕對不要用 application/json
                     },
                     body: JSON.stringify(payload)
                 });
-                console.log('Data submitted to Google Sheets successfully');
+                console.log('Request sent (blindly) via no-cors');
+                return true;
             } catch (error) {
-                console.log('Google Sheets submission error:', error);
+                console.error('Error sending to Google Sheets:', error);
+                return false;
             }
         }
+
 
         // 表單提交
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
