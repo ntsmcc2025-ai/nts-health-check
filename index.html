@@ -628,37 +628,41 @@
         }
 
         // 發送數據到 Google Sheets (使用 Google Apps Script)
-                       async function submitToGoogleSheets(formData) {
-            // 這裡放你剛剛重新部署拿到的最新網址
-            const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbwIcDZbuhqGnqGsKBxyh-LG1Nduv1ZYY0YPbfoi9oAHMGUQp2rmGthIIkXWi38m4yRy8A/exec';
+                               async function submitToGoogleSheets(formData) {
+            // ⚠️ 請確認這裡是你最新的 Web App URL (結尾是 /exec)
+            const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzVoQ85DPmnvm3ubQ3SwQJKJ-2oMya60A2ddEb-PdIzNg0aV4l8xSduxIXXH9YqwsBX-g/exec';
 
-            // 將資料轉換為 URL 編碼的表單格式 (比 JSON 更保險)
+            // 1. 轉換資料格式：不傳 JSON，改傳「網址參數」格式
+            // 這種格式是 Google 最喜歡的，絕對不會被擋
             const params = new URLSearchParams();
             params.append('name', formData.name);
             params.append('posting', formData.posting);
             params.append('phone', formData.phone);
             params.append('timeslot', formData.timeslot);
+            // 這裡自動加上時間，你不用操心
             params.append('timestamp', new Date().toLocaleString());
 
             try {
                 await fetch(googleAppsScriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors', // ⚠️ 必須是 no-cors
+                    mode: 'no-cors', // ⚠️ 關鍵：盲傳模式
                     headers: {
+                        // ⚠️ 關鍵：告訴瀏覽器這是普通表單，不要囉嗦，直接送！
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: params
                 });
-                
-                // no-cors 模式下，我們無法得知請求是否真的成功 (因為拿不到 response)
-                // 但只要沒有報錯，通常就是成功送出了
-                console.log('表單已送出');
+
+                console.log('已發送資料');
                 return true;
+
             } catch (error) {
-                console.error('發送錯誤:', error);
+                // 其實在 no-cors 模式下很難抓到錯誤，但留著以防萬一
+                console.error('發送失敗:', error);
                 return false;
             }
         }
+
 
 
 
