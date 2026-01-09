@@ -628,41 +628,38 @@
         }
 
         // 發送數據到 Google Sheets (使用 Google Apps Script)
-               async function submitToGoogleSheets(formData) {
-            // 你的最新 URL
-            const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbwYLMcEX9DWAIedQxhNAYoMjvGvyHxU5MyBmf6yDrqV0Wr4DegNXrGqNQhZDBBYXF8C-A/exec';
-            
-            const payload = {
-                name: formData.name,
-                posting: formData.posting,
-                phone: formData.phone,
-                timeslot: formData.timeslot,
-                timestamp: new Date().toLocaleString()
-            };
+                       async function submitToGoogleSheets(formData) {
+            // 這裡放你剛剛重新部署拿到的最新網址
+            const googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbzVoQ85DPmnvm3ubQ3SwQJKJ-2oMya60A2ddEb-PdIzNg0aV4l8xSduxIXXH9YqwsBX-g/exec';
 
-            // ⚠️ 關鍵修改：
-            // 1. 使用 URLSearchParams 封裝數據 (模擬傳統表單提交)
-            // 2. 不要手動設定 Content-Type 為 application/json
-            // 3. 不要設定 mode: 'no-cors' (因為用表單格式通常可以直接過)
-            //    或者保留 no-cors 但要配合 text/plain
-            
-            // 方案 A：使用 text/plain (最推薦，最穩)
+            // 將資料轉換為 URL 編碼的表單格式 (比 JSON 更保險)
+            const params = new URLSearchParams();
+            params.append('name', formData.name);
+            params.append('posting', formData.posting);
+            params.append('phone', formData.phone);
+            params.append('timeslot', formData.timeslot);
+            params.append('timestamp', new Date().toLocaleString());
+
             try {
                 await fetch(googleAppsScriptUrl, {
                     method: 'POST',
-                    mode: 'no-cors', // 忽略 CORS 回應
+                    mode: 'no-cors', // ⚠️ 必須是 no-cors
                     headers: {
-                        'Content-Type': 'text/plain' // 這是重點！絕對不要用 application/json
+                        'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: JSON.stringify(payload)
+                    body: params
                 });
-                console.log('Request sent (blindly) via no-cors');
+                
+                // no-cors 模式下，我們無法得知請求是否真的成功 (因為拿不到 response)
+                // 但只要沒有報錯，通常就是成功送出了
+                console.log('表單已送出');
                 return true;
             } catch (error) {
-                console.error('Error sending to Google Sheets:', error);
+                console.error('發送錯誤:', error);
                 return false;
             }
         }
+
 
 
         // 表單提交
